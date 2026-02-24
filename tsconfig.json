@@ -15,6 +15,10 @@
     // "types": ["node"],
     // and npm install -D @types/node
 
+    "esModuleInterop": true,
+    "moduleResolution": "nodenext",
+    "strict": true,
+
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
@@ -33,7 +37,6 @@
     // "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
-    "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
