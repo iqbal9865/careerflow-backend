@@ -9,31 +9,90 @@ generator client {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
+  id            String        @id @default(uuid())
+  email         String        @unique
+  password      String
+  role          Role          @default(USER)
+
+  profile       Profile?
+  ownedCompany  Company?
+  applications  Application[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  fullName  String
+  bio       String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique
+
+  skills    Skill[]
+}
+
+model Skill {
+  id        String   @id @default(uuid())
+  name      String
+
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+}
+
+model Company {
+  id          String   @id @default(uuid())
   name        String
-  email       String       @unique
-  password    String
+  description String?
+
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String   @unique
+
+  jobs        Job[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Job {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+
   applications Application[]
-  createdAt   DateTime     @default(now())
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model Application {
-  id          Int       @id @default(autoincrement())
-  companyName String
-  roleTitle   String
-  status      Status
-  appliedDate DateTime
-  notes       String?
-  jobUrl      String?
-  user        User      @relation(fields: [userId], references: [id])
-  userId      Int
-  createdAt   DateTime  @default(now())
+  id        String            @id @default(uuid())
+  status    ApplicationStatus @default(PENDING)
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId     String
+
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([userId, jobId]) // prevents duplicate applications
 }
 
-enum Status {
-  APPLIED
-  INTERVIEW
-  REJECTED
-  OFFER
+enum Role {
+  USER
+  COMPANY
+  ADMIN
+}
+
+enum ApplicationStatus {
+  PENDING
   ACCEPTED
+  REJECTED
 }
