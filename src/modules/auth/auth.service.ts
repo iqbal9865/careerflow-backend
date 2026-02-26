@@ -2,12 +2,10 @@ import bcrypt from "bcrypt";
 import { prisma } from "../../lib/prisma.js";
 import { generateToken } from "../../utils/jwt.js";
 import { Role } from "@prisma/client";
+import type { LoginUserInput, RegisterUserInput } from "./auth.types.js";
 
-export const registerUser = async (data: {
-  email: string;
-  password: string;
-  role?: string;
-}) => {
+
+export const registerUser = async (data: RegisterUserInput) => {
   const { email, password, role } = data;
 
   const existingUser = await prisma.user.findUnique({
@@ -41,10 +39,7 @@ export const registerUser = async (data: {
   };
 };
 
-export const loginUser = async (data: {
-  email: string;
-  password: string;
-}) => {
+export const loginUser = async (data: LoginUserInput) => {
   const { email, password } = data;
 
   const user = await prisma.user.findUnique({
