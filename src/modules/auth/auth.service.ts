@@ -6,7 +6,14 @@ import type { LoginUserInput, RegisterUserInput } from "./auth.types.js";
 
 
 export const registerUser = async (data: RegisterUserInput) => {
-  const { email, password, role } = data;
+  const { fullName, email, password, role } = data;
+
+  if (!fullName || !email || !password) {
+    throw {
+      statusCode: 400,
+      message: "Missing required fields",
+    };
+  }
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
@@ -23,6 +30,7 @@ export const registerUser = async (data: RegisterUserInput) => {
 
   const user = await prisma.user.create({
     data: {
+      fullName,
       email,
       password: hashedPassword,
       role: (role as Role) || Role.USER,
@@ -32,7 +40,9 @@ export const registerUser = async (data: RegisterUserInput) => {
   return {
     message: "User registered successfully",
     user: {
+
       id: user.id,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
     },
