@@ -1,7 +1,6 @@
 import type { RegisterUserInput } from "../modules/auth/auth.types.js";
 import { ApiError } from "../utils/ApiError.js";
 
-
 export const validateRegisterInput = (data: RegisterUserInput): void => {
   const { fullName, email, password } = data;
 
