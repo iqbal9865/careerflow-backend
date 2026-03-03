@@ -30,6 +30,11 @@ export const registerUser = async (data: RegisterUserInput) => {
     },
   });
 
+  const token = generateToken({
+    userId: user.id,
+    role: user.role,
+  });
+
   return {
     message: "User registered successfully",
     data: {
@@ -38,6 +43,7 @@ export const registerUser = async (data: RegisterUserInput) => {
       email: user.email,
       role: user.role,
     },
+    token,
   };
 };
 
