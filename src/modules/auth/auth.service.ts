@@ -3,35 +3,28 @@ import { prisma } from "../../lib/prisma.js";
 import { generateToken } from "../../utils/jwt.js";
 import { Role } from "@prisma/client";
 import type { LoginUserInput, RegisterUserInput } from "./auth.types.js";
-
+import { ApiError } from "../../utils/ApiError.js";
 
 export const registerUser = async (data: RegisterUserInput) => {
   const { fullName, email, password, role } = data;
 
-  if (!fullName || !email || !password) {
-    throw {
-      statusCode: 400,
-      message: "Missing required fields",
-    };
-  }
+  const normalizedEmail = email.toLowerCase().trim();
+  const cleanFullName = fullName.trim();
 
   const existingUser = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (existingUser) {
-    throw {
-      statusCode: 400,
-      message: "User already exists",
-    };
+    throw new ApiError(400, "User already exists");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
     data: {
-      fullName,
-      email,
+      fullName: cleanFullName,
+      email: normalizedEmail,
       password: hashedPassword,
       role: (role as Role) || Role.USER,
     },
@@ -39,8 +32,7 @@ export const registerUser = async (data: RegisterUserInput) => {
 
   return {
     message: "User registered successfully",
-    user: {
-
+    data: {
       id: user.id,
       fullName: user.fullName,
       email: user.email,
@@ -51,25 +43,20 @@ export const registerUser = async (data: RegisterUserInput) => {
 
 export const loginUser = async (data: LoginUserInput) => {
   const { email, password } = data;
+  const normalizedEmail = email.toLowerCase().trim();
 
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizedEmail },
   });
 
   if (!user) {
-    throw {
-      statusCode: 400,
-      message: "Invalid credentials",
-    };
+    throw new ApiError(400, "Invalid credentials");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw {
-      statusCode: 400,
-      message: "Invalid credentials",
-    };
+    throw new ApiError(400, "Invalid credentials");
   }
 
   const token = generateToken({
@@ -79,6 +66,6 @@ export const loginUser = async (data: LoginUserInput) => {
 
   return {
     message: "Login successful",
-    token,
+    data: { token }
   };
 };
