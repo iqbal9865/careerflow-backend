@@ -56,7 +56,7 @@ export const loginUser = async (data: LoginUserInput) => {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw new ApiError(400, "Invalid credentials");
+    throw new ApiError(400, "Wrong password");
   }
 
   const token = generateToken({

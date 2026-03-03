@@ -1,6 +1,7 @@
-import type { RegisterUserInput } from "../modules/auth/auth.types.js";
+import type { RegisterUserInput, LoginUserInput } from "../modules/auth/auth.types.js";
 import { ApiError } from "../utils/ApiError.js";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const validateRegisterInput = (data: RegisterUserInput): void => {
   const { fullName, email, password } = data;
@@ -9,7 +10,6 @@ export const validateRegisterInput = (data: RegisterUserInput): void => {
     throw new ApiError(400, "Missing required fields");
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     throw new ApiError(400, "Invalid email format");
   }
@@ -30,5 +30,15 @@ export const validateRegisterInput = (data: RegisterUserInput): void => {
       "Password must include uppercase, lowercase, number, and special character"
     );
   }
-
 };
+
+export const validateLoginInput = (data: LoginUserInput): void => {
+  const { email, password } = data;
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  if (!emailRegex.test(email)) {
+    throw new ApiError(400, "Invalid email format");
+  }
+}
