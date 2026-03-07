@@ -22,3 +22,23 @@ export const loginController = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const refreshController = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = await authService.refreshTokenService(refreshToken);
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};
+
+export const logoutController = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = await authService.logoutService(refreshToken);
+    res.json(result);
+  } catch (error: any) {
+    res.status(error.statusCode || 500).json({ message: error.message });
+  }
+};

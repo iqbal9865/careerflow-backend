@@ -1,15 +1,34 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN =
-  (process.env.JWT_EXPIRES_IN as SignOptions["expiresIn"]) || "24h";
+function getSecret(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is not set`);
+  return value;
+}
 
-export const generateToken = (payload: object): string => {
-  if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET environment variable is not set.");
-  }
+function getExpiresIn(envKey: string, fallback: string): string {
+  return process.env[envKey] ?? fallback;
+}
 
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+const accessTokenSecret = () => getSecret("ACCESS_TOKEN_SECRET");
+const refreshTokenSecret = () => getSecret("REFRESH_TOKEN_SECRET");
+const accessTokenExpires = getExpiresIn("ACCESS_TOKEN_EXPIRES_IN", "15m");
+const refreshTokenExpires = getExpiresIn("REFRESH_TOKEN_EXPIRES_IN", "30d");
+
+// Generate short-lived access token
+export const generateAccessToken = (userId: string) => {
+  return jwt.sign(
+    { userId },
+    accessTokenSecret(),
+    { expiresIn: accessTokenExpires } as SignOptions
+  );
+};
+
+// Generate long-lived refresh token
+export const generateRefreshToken = (userId: string) => {
+  return jwt.sign(
+    { userId },
+    refreshTokenSecret(),
+    { expiresIn: refreshTokenExpires } as SignOptions
+  );
 };

@@ -15,12 +15,24 @@ model User {
   password      String
   role          Role          @default(USER)
 
+  refreshTokens RefreshToken[]
+
   profile       Profile?
   ownedCompany  Company?
   applications  Application[]
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Profile {
