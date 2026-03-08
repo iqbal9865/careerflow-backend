@@ -27,7 +27,6 @@ export const registerUser = async (data: RegisterUserInput) => {
     },
   });
 
-  // Generate tokens
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
@@ -63,7 +62,6 @@ export const loginUser = async (data: LoginUserInput) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new ApiError(400, "Wrong password");
 
-  // Generate tokens
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
