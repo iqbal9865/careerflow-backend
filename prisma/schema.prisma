@@ -38,6 +38,7 @@ model RefreshToken {
 model Profile {
   id        String   @id @default(uuid())
   bio       String?
+  avatarUrl String?
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @unique

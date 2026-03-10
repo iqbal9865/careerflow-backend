@@ -27,6 +27,14 @@ export const registerUser = async (data: RegisterUserInput) => {
     },
   });
 
+  await prisma.profile.create({
+    data: {
+      userId: user.id,
+      bio: null,
+      avatarUrl: null
+    },
+  });
+
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
