@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 datasource db {
   provider = "postgresql"
 }
@@ -16,9 +14,7 @@ model User {
   role          Role          @default(USER)
 
   refreshTokens RefreshToken[]
-
   profile       Profile?
-  ownedCompany  Company?
   applications  Application[]
 
   createdAt     DateTime      @default(now())
@@ -36,76 +32,69 @@ model RefreshToken {
 }
 
 model Profile {
-  id        String   @id @default(uuid())
-  bio       String?
-  avatarUrl String?
+  id           String    @id @default(uuid())
+  bio          String?
+  avatarUrl    String?
+  phoneNumber  String?
+  dateOfBirth  DateTime?
+  gender       Gender?
+  city         String?
+  country      String?
+  portfolioUrl String?
+  linkedinUrl  String?
+  githubUrl    String?
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @unique
-
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String  @unique
   skills    Skill[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Skill {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   name      String
-
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   profileId String
-}
 
-model Company {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String   @unique
-
-  jobs        Job[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Job {
-  id          String        @id @default(uuid())
-  title       String
-  description String
-
-  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId   String
-
-  applications Application[]
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt DateTime @default(now())
 }
 
 model Application {
-  id        String            @id @default(uuid())
-  status    ApplicationStatus @default(PENDING)
+  id          String            @id @default(uuid())
+  companyName String
+  position    String
+  location    String?
+  salaryRange String?
+  jobUrl      String?
+  source      String?
+  notes       String?
+  appliedAt   DateTime          @default(now())
+  followUpAt  DateTime?
+  status      ApplicationStatus @default(PENDING)
 
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-  job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId     String
-
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-
-  @@unique([userId, jobId]) // prevents duplicate applications
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
   USER
-  COMPANY
   ADMIN
 }
 
 enum ApplicationStatus {
   PENDING
+  INTERVIEW
   ACCEPTED
   REJECTED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
 }

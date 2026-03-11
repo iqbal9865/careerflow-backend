@@ -1,5 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "../../utils/ApiError.js";
+import type { ProfileInput } from "./profile.types.js";
 
 export const getProfileService = async (userId: string) => {
     const profile = await prisma.profile.findUnique({
@@ -12,7 +13,7 @@ export const getProfileService = async (userId: string) => {
 
 export const updateProfileService = async (
     userId: string,
-    data: { bio?: string, avatarUrl?: string }
+    data: ProfileInput
 ) => {
     const profile = await prisma.profile.update({
         where: { userId },

@@ -1,8 +1,11 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'COMPANY', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "ApplicationStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
+CREATE TYPE "ApplicationStatus" AS ENUM ('PENDING', 'INTERVIEW', 'ACCEPTED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE', 'OTHER');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -18,10 +21,32 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "RefreshToken" (
+    "id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Profile" (
     "id" TEXT NOT NULL,
     "bio" TEXT,
+    "avatarUrl" TEXT,
+    "phoneNumber" TEXT,
+    "dateOfBirth" TIMESTAMP(3),
+    "gender" "Gender",
+    "city" TEXT,
+    "country" TEXT,
+    "portfolioUrl" TEXT,
+    "linkedinUrl" TEXT,
+    "githubUrl" TEXT,
     "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
 );
@@ -31,40 +56,25 @@ CREATE TABLE "Skill" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "profileId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Skill_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Company" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "ownerId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Job" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "companyId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Job_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Application" (
     "id" TEXT NOT NULL,
+    "companyName" TEXT NOT NULL,
+    "position" TEXT NOT NULL,
+    "location" TEXT,
+    "salaryRange" TEXT,
+    "jobUrl" TEXT,
+    "source" TEXT,
+    "notes" TEXT,
+    "appliedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "followUpAt" TIMESTAMP(3),
     "status" "ApplicationStatus" NOT NULL DEFAULT 'PENDING',
     "userId" TEXT NOT NULL,
-    "jobId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -75,13 +85,13 @@ CREATE TABLE "Application" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "RefreshToken_token_key" ON "RefreshToken"("token");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Profile_userId_key" ON "Profile"("userId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Company_ownerId_key" ON "Company"("ownerId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Application_userId_jobId_key" ON "Application"("userId", "jobId");
+-- AddForeignKey
+ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -90,13 +100,4 @@ ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Skill" ADD CONSTRAINT "Skill_profileId_fkey" FOREIGN KEY ("profileId") REFERENCES "Profile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Company" ADD CONSTRAINT "Company_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Job" ADD CONSTRAINT "Job_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Application" ADD CONSTRAINT "Application_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Application" ADD CONSTRAINT "Application_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;

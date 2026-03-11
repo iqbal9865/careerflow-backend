@@ -6,7 +6,7 @@ import type { LoginUserInput, RegisterUserInput } from "./auth.types.js";
 import { ApiError } from "../../utils/ApiError.js";
 import jwt from "jsonwebtoken";
 export const registerUser = async (data: RegisterUserInput) => {
-  const { fullName, email, password, role } = data;
+  const { fullName, email, password } = data;
 
   const normalizedEmail = email.toLowerCase().trim();
   const cleanFullName = fullName.trim();
@@ -23,15 +23,13 @@ export const registerUser = async (data: RegisterUserInput) => {
       fullName: cleanFullName,
       email: normalizedEmail,
       password: hashedPassword,
-      role: (role as Role) || Role.USER,
+      role: normalizedEmail === process.env.ADMIN_EMAIL ? Role.ADMIN : Role.USER,
     },
   });
 
   await prisma.profile.create({
     data: {
-      userId: user.id,
-      bio: null,
-      avatarUrl: null
+      userId: user.id
     },
   });
 
