@@ -24,7 +24,6 @@ export const authMiddleware = (
   }
 
   try {
-    // Decode JWT and cast to expected type
     const decoded: any = jwt.verify(token, secret) as { userId: string };
     req.userId = decoded.userId;
     next();
