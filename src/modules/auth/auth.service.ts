@@ -41,7 +41,7 @@ export const registerUser = async (data: RegisterUserInput) => {
     data: {
       token: refreshToken,
       userId: user.id,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 
     },
   });
 
