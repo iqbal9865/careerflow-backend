@@ -36,7 +36,6 @@ export const registerUser = async (data: RegisterUserInput) => {
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
-  // Save refresh token in DB
   await prisma.refreshToken.create({
     data: {
       token: refreshToken,
