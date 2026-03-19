@@ -70,7 +70,6 @@ export const loginUser = async (data: LoginUserInput) => {
   const accessToken = generateAccessToken(user.id);
   const refreshToken = generateRefreshToken(user.id);
 
-  // Save refresh token in DB
   await prisma.refreshToken.create({
     data: {
       token: refreshToken,
@@ -105,7 +104,6 @@ export const refreshTokenService = async (refreshToken: string) => {
       process.env.REFRESH_TOKEN_SECRET as string
     ) as { userId: string };
 
-    // Generate new access token
     const newAccessToken = generateAccessToken(decoded.userId);
 
     return { accessToken: newAccessToken };
@@ -114,7 +112,6 @@ export const refreshTokenService = async (refreshToken: string) => {
   }
 };
 
-// Logout user (invalidate refresh token)
 export const logoutService = async (refreshToken: string) => {
   if (!refreshToken) throw new ApiError(400, "Refresh token required");
 
