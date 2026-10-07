@@ -1,7 +1,22 @@
 // application.service.ts
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { pickFields } from "../../utils/pickFields.js";
 import type { ApplicationInput, ApplicationOutput } from "./application.types.js";
+
+// Fields a client may set. id, userId, the user relation and timestamps are server-controlled
+export const APPLICATION_WRITABLE_FIELDS = [
+    "companyName",
+    "position",
+    "location",
+    "salaryRange",
+    "jobUrl",
+    "source",
+    "notes",
+    "appliedAt",
+    "followUpAt",
+    "status"
+] as const satisfies readonly (keyof ApplicationInput)[];
 
 export const createApplicationService = async (
     userId: string,
@@ -9,7 +24,10 @@ export const createApplicationService = async (
 ): Promise<ApplicationOutput> => {
     const application = await prisma.application.create({
         data: {
-            ...data,
+            ...pickFields(data, APPLICATION_WRITABLE_FIELDS),
+            // Required fields, guaranteed by validateCreateApplicationInput
+            companyName: data.companyName,
+            position: data.position,
             userId
         }
     });
@@ -54,7 +72,7 @@ export const updateApplicationService = async (
 
     const updated = await prisma.application.update({
         where: { id: applicationId },
-        data
+        data: pickFields(data, APPLICATION_WRITABLE_FIELDS)
     });
     return updated;
 };
