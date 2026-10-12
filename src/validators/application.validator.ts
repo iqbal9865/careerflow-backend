@@ -4,8 +4,6 @@ import { assertDateField, assertPlainObject, assertStringField } from "./common.
 
 const validStatuses: string[] = Object.values(ApplicationStatus);
 
-// Every writable field must be a primitive of the right type, so no object
-// (nested relation write or Prisma operator) can reach the database
 const validateApplicationFieldTypes = (data: Record<string, unknown>): void => {
     assertStringField(data, "companyName", { nullable: false });
     assertStringField(data, "position", { nullable: false });

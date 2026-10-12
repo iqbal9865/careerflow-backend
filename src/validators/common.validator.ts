@@ -10,7 +10,6 @@ export function assertPlainObject(data: unknown): asserts data is Record<string,
     }
 }
 
-// Rejects objects/arrays/numbers so Prisma never receives nested writes or filter operators
 export const assertStringField = (
     data: Record<string, unknown>,
     field: string,

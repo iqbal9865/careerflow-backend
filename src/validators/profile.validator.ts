@@ -18,8 +18,6 @@ const STRING_FIELDS = [
 export const validateUpdateProfileInput = (data: unknown): void => {
     assertPlainObject(data);
 
-    // Every writable field must be a string (or null to clear it), so no object
-    // (nested relation write or Prisma operator) can reach the database
     for (const field of STRING_FIELDS) {
         assertStringField(data, field, { nullable: true });
     }

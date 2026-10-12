@@ -30,7 +30,7 @@ server.ts (mounts routers under /api/v1)
 ```
 
 - `src/app.ts` creates the Express app and applies `cors()` and `express.json()`.
-- `src/server.ts` loads env vars, mounts routes, adds a 404 fallback and calls `listen`. New routers are mounted here.
+- `src/server.ts` loads env vars with `import "dotenv/config"`, mounts routes, adds a 404 fallback and calls `listen`. New routers are mounted here.
 
 ## Folder and module conventions
 
@@ -65,7 +65,8 @@ src/
   - Optional fields are nullable (`String?`).
 - A `Profile` is created automatically when a user registers, so the user-to-profile relation is 1:1 (`userId @unique`).
 - `Skill` exists in the schema, but no API uses it yet.
-- **Import Prisma only from `src/lib/prisma.ts`.** `src/config/db.ts` is a legacy duplicate client. Don't use it in new code.
+- **Import Prisma only from `src/lib/prisma.ts`.** Never create another `PrismaClient`.
+- `lib/prisma.ts` logs queries only when `NODE_ENV=development`. Otherwise it logs warnings and errors only.
 - Import enums and types from `@prisma/client`, for example `import { ApplicationStatus } from "@prisma/client"`.
 - Schema changes:
   1. Edit `schema.prisma`.
@@ -145,7 +146,7 @@ Run all commands from the repository root.
 
 ## Environment variables
 
-`PORT`, `DATABASE_URL`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN`, `ADMIN_EMAIL`
+`PORT`, `DATABASE_URL`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `ACCESS_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_EXPIRES_IN`, `ADMIN_EMAIL`, `NODE_ENV` (optional; `development` turns on Prisma query logging)
 
 `.env` is git-ignored and must never be read, printed, or committed (see rule 1). The README mentions a `.env.example` file, but it doesn't exist yet. If one is added, it must contain variable names only, with no real values.
 
@@ -170,9 +171,7 @@ Run all commands from the repository root.
 
 ## Known issues (don't copy these patterns)
 
-- `src/config/db.ts` creates a second, unused PrismaClient, and `server.ts` imports it. `lib/prisma.ts` is the real client, and it logs every query.
 - Login returns different messages for an unknown email ("Invalid credentials") and a wrong password ("Wrong password"), which lets attackers find out which emails are registered.
-- The register and login validators don't check field types. A non-string `email` or `password` causes a `TypeError`, which becomes a 500 error. It fails before any Prisma call. The application, profile and account validators already check types.
 - `PUT /auth/email` changes the email in one step, without verifying the new address, and there is no password-change endpoint yet. OTP email verification is planned for both but postponed, because no email provider is set up yet. Agreed design:
   - For an email change, send the OTP to the **new** address and a notice to the old one.
   - Store codes hashed, with a short expiry and an attempt limit.

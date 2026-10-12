@@ -1,14 +1,18 @@
-import type { RegisterUserInput, LoginUserInput } from "../modules/auth/auth.types.js";
 import { ApiError } from "../utils/ApiError.js";
 import { assertPlainObject } from "./common.validator.js";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const validateRegisterInput = (data: RegisterUserInput): void => {
+export const validateRegisterInput = (data: unknown): void => {
+  assertPlainObject(data);
   const { fullName, email, password } = data;
 
   if (!fullName || !email || !password) {
     throw new ApiError(400, "Missing required fields");
+  }
+
+  if (typeof fullName !== "string" || typeof email !== "string" || typeof password !== "string") {
+    throw new ApiError(400, "Full name, email and password must be strings");
   }
 
   if (!emailRegex.test(email)) {
@@ -33,10 +37,15 @@ export const validateRegisterInput = (data: RegisterUserInput): void => {
   }
 };
 
-export const validateLoginInput = (data: LoginUserInput): void => {
+export const validateLoginInput = (data: unknown): void => {
+  assertPlainObject(data);
   const { email, password } = data;
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
+  }
+
+  if (typeof email !== "string" || typeof password !== "string") {
+    throw new ApiError(400, "Email and password must be strings");
   }
 
   if (!emailRegex.test(email)) {
@@ -44,8 +53,6 @@ export const validateLoginInput = (data: LoginUserInput): void => {
   }
 }
 
-// Used by /auth/refresh and /auth/logout. refreshToken is used as a Prisma filter,
-// so anything other than a non-empty string (e.g. { "not": "" }) must be rejected
 export const validateRefreshTokenInput = (data: unknown): void => {
   assertPlainObject(data);
   const { refreshToken } = data;
