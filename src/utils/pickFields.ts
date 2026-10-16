@@ -1,5 +1,4 @@
-// Copy only allowlisted keys from source; keys that are undefined are skipped
-// so partial updates leave unsent fields untouched
+
 export const pickFields = <T extends object, K extends keyof T>(
     source: T,
     allowedKeys: readonly K[]
