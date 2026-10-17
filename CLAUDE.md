@@ -4,7 +4,7 @@ Guidance for AI coding agents working in this repository.
 
 ## Project overview
 
-CareerFlow Backend is a REST API for tracking job applications. Users register, keep a profile, and create, read, update and delete their own job applications. It has three feature modules: `auth`, `profile` and `application`.
+CareerFlow Backend is a REST API for tracking job applications. Users register, keep a profile, and create, read, update and delete their own job applications. They can also keep a to-do list of tasks with deadlines and track their progress. It has four feature modules: `auth`, `profile`, `application` and `task`.
 
 ## Technology stack
 
@@ -57,7 +57,7 @@ src/
 ## Database and Prisma conventions
 
 - The schema is in `prisma/schema.prisma` and migrations are in `prisma/migrations/`. The datasource URL comes from `DATABASE_URL` through `prisma.config.ts`.
-- Models are `User`, `RefreshToken`, `Profile`, `Skill` and `Application`. Enums are `Role`, `ApplicationStatus` and `Gender`.
+- Models are `User`, `RefreshToken`, `Profile`, `Skill`, `Application` and `Task`. Enums are `Role`, `ApplicationStatus`, `TaskStatus` and `Gender`.
 - Model conventions:
   - Every primary key is `String @id @default(uuid())`.
   - Every model has `createdAt DateTime @default(now())`. Mutable models also have `updatedAt DateTime @updatedAt`.
@@ -87,6 +87,13 @@ src/
   - `PUT /auth/name` (protected) changes `fullName`. `PUT /auth/email` (protected) changes the email and requires `currentPassword`.
   - `GET` and `PUT /profile` (protected). `GET` also returns `user: { fullName, email }`. Name and email are login/account data: change them only through `/auth`, never through `PUT /profile`.
   - `POST` and `GET /applications`, and `GET`, `PUT` and `DELETE /applications/:id` (all protected)
+  - Tasks (all protected):
+    - `POST /tasks` takes `title`, `deadline` and an optional `description`. New tasks always start as `PENDING`, and sending `status` returns 400.
+    - `GET /tasks` lists the user's tasks, soonest deadline first. Optional filters: `?status=` and a deadline range with `?from=` / `?to=`.
+    - `GET /tasks/stats` returns `total`, `byStatus`, `overdue`, `completedOnTime`, `completedLate`, `completionRate` and `onTimeRate` (percentages, 0-100). It takes the same `from`/`to` filters.
+    - `GET`, `PUT` and `DELETE /tasks/:id`. `PUT` edits `title`, `description` and `deadline` only, and returns 409 for a `DONE` task.
+    - `PUT /tasks/:id/status` with `{ status }`. The only allowed moves are `PENDING → REVIEW` (sets `completedAt`), `REVIEW → DONE` (sets `reviewedAt`) and `REVIEW → PENDING` (clears `completedAt`). Any other move returns 409.
+    - `/tasks/stats` is registered before `/tasks/:id` so `stats` isn't read as an id.
 - REST verbs:
   - `POST` creates and returns `201`.
   - `GET`, `PUT` and `DELETE` return `200`.

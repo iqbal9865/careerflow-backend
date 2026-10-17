@@ -16,6 +16,7 @@ model User {
   refreshTokens RefreshToken[]
   profile       Profile?
   applications  Application[]
+  tasks         Task[]
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -81,6 +82,25 @@ model Application {
   updatedAt DateTime @updatedAt
 }
 
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  deadline    DateTime
+  status      TaskStatus @default(PENDING)
+  completedAt DateTime?
+  reviewedAt  DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, deadline])
+}
+
 enum Role {
   USER
   ADMIN
@@ -91,6 +111,12 @@ enum ApplicationStatus {
   INTERVIEW
   ACCEPTED
   REJECTED
+}
+
+enum TaskStatus {
+  PENDING
+  REVIEW
+  DONE
 }
 
 enum Gender {

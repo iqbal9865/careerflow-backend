@@ -9,12 +9,14 @@ import app from "../../src/app.js";
 import authRoutes from "../../src/modules/auth/auth.route.js";
 import profileRoutes from "../../src/modules/profile/profile.route.js";
 import applicationRoutes from "../../src/modules/application/application.route.js";
+import taskRoutes from "../../src/modules/task/task.route.js";
 import { prisma } from "../../src/lib/prisma.js";
 
 // Same mounting as server.ts, without listen() on the real port
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/profile", profileRoutes);
 app.use("/api/v1/applications", applicationRoutes);
+app.use("/api/v1/tasks", taskRoutes);
 app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
 });
