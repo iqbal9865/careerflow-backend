@@ -12,8 +12,6 @@ export const TASK_WRITABLE_FIELDS = [
     "deadline"
 ] as const satisfies readonly (keyof TaskInput)[];
 
-// Allowed status changes: PENDING -> REVIEW (task finished), REVIEW -> DONE (review passed),
-// REVIEW -> PENDING (review failed, back to work)
 const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
     [TaskStatus.PENDING]: [TaskStatus.REVIEW],
     [TaskStatus.REVIEW]: [TaskStatus.DONE, TaskStatus.PENDING],
