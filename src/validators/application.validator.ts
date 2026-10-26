@@ -7,7 +7,7 @@ const validStatuses: string[] = Object.values(ApplicationStatus);
 const validateApplicationFieldTypes = (data: Record<string, unknown>): void => {
     assertStringField(data, "companyName", { nullable: false });
     assertStringField(data, "position", { nullable: false });
-    for (const field of ["location", "salaryRange", "jobUrl", "source", "notes"]) {
+    for (const field of ["location", "salaryRange", "jobUrl", "source", "notes", "rejectionReason"]) {
         assertStringField(data, field, { nullable: true });
     }
     assertDateField(data, "appliedAt", { nullable: false });
@@ -22,10 +22,14 @@ const validateApplicationFieldTypes = (data: Record<string, unknown>): void => {
 export const validateCreateApplicationInput = (data: unknown): void => {
     assertPlainObject(data);
     validateApplicationFieldTypes(data);
-    const { companyName, position } = data;
+    const { companyName, position, status, rejectionReason } = data;
 
     if (typeof companyName !== "string" || typeof position !== "string" || !companyName || !position) {
         throw new ApiError(400, "Company name and position are required");
+    }
+
+    if (typeof rejectionReason === "string" && status !== ApplicationStatus.REJECTED) {
+        throw new ApiError(400, "Rejection reason can only be set when status is REJECTED");
     }
 
     if (companyName.trim().length < 2) {

@@ -11,6 +11,7 @@ export interface ApplicationInput {
     appliedAt?: Date
     followUpAt?: Date
     status?: ApplicationStatus
+    rejectionReason?: string | null
 }
 
 export interface ApplicationOutput {
@@ -25,6 +26,7 @@ export interface ApplicationOutput {
     appliedAt: Date
     followUpAt: Date | null
     status: ApplicationStatus
+    rejectionReason: string | null
     createdAt: Date
     updatedAt: Date
 }

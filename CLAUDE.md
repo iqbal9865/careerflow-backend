@@ -87,6 +87,7 @@ src/
   - `PUT /auth/name` (protected) changes `fullName`. `PUT /auth/email` (protected) changes the email and requires `currentPassword`.
   - `GET` and `PUT /profile` (protected). `GET` also returns `user: { fullName, email }`. Name and email are login/account data: change them only through `/auth`, never through `PUT /profile`.
   - `POST` and `GET /applications`, and `GET`, `PUT` and `DELETE /applications/:id` (all protected)
+    - `rejectionReason` (optional, nullable string) can only be sent when the application's status (after the update) is `REJECTED`. Otherwise it returns 400. Moving the status away from `REJECTED` clears it to `null`.
   - Tasks (all protected):
     - `POST /tasks` takes `title`, `deadline` and an optional `description`. New tasks always start as `PENDING`, and sending `status` returns 400.
     - `GET /tasks` lists the user's tasks, soonest deadline first. Optional filters: `?status=` and a deadline range with `?from=` / `?to=`.

@@ -1,4 +1,5 @@
 // application.service.ts
+import { ApplicationStatus } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { pickFields } from "../../utils/pickFields.js";
@@ -15,7 +16,8 @@ export const APPLICATION_WRITABLE_FIELDS = [
     "notes",
     "appliedAt",
     "followUpAt",
-    "status"
+    "status",
+    "rejectionReason"
 ] as const satisfies readonly (keyof ApplicationInput)[];
 
 export const createApplicationService = async (
@@ -70,9 +72,19 @@ export const updateApplicationService = async (
     if (!application) throw new ApiError(404, "Application not found");
     if (application.userId !== userId) throw new ApiError(403, "Forbidden");
 
+    // A rejection reason only belongs to a REJECTED application, judged by the status after this update
+    const isRejected = (data.status ?? application.status) === ApplicationStatus.REJECTED;
+    if (typeof data.rejectionReason === "string" && !isRejected) {
+        throw new ApiError(400, "Rejection reason can only be set when status is REJECTED");
+    }
+
     const updated = await prisma.application.update({
         where: { id: applicationId },
-        data: pickFields(data, APPLICATION_WRITABLE_FIELDS)
+        data: {
+            ...pickFields(data, APPLICATION_WRITABLE_FIELDS),
+            // Leaving REJECTED clears the old reason
+            ...(!isRejected && { rejectionReason: null })
+        }
     });
     return updated;
 };

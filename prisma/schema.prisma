@@ -63,17 +63,18 @@ model Skill {
 }
 
 model Application {
-  id          String            @id @default(uuid())
-  companyName String
-  position    String
-  location    String?
-  salaryRange String?
-  jobUrl      String?
-  source      String?
-  notes       String?
-  appliedAt   DateTime          @default(now())
-  followUpAt  DateTime?
-  status      ApplicationStatus @default(PENDING)
+  id              String            @id @default(uuid())
+  companyName     String
+  position        String
+  location        String?
+  salaryRange     String?
+  jobUrl          String?
+  source          String?
+  notes           String?
+  appliedAt       DateTime          @default(now())
+  followUpAt      DateTime?
+  status          ApplicationStatus @default(PENDING)
+  rejectionReason String?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
