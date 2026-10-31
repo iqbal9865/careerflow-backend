@@ -1,13 +1,18 @@
-import type { RegisterUserInput, LoginUserInput } from "../modules/auth/auth.types.js";
 import { ApiError } from "../utils/ApiError.js";
+import { assertPlainObject } from "./common.validator.js";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const validateRegisterInput = (data: RegisterUserInput): void => {
+export const validateRegisterInput = (data: unknown): void => {
+  assertPlainObject(data);
   const { fullName, email, password } = data;
 
   if (!fullName || !email || !password) {
     throw new ApiError(400, "Missing required fields");
+  }
+
+  if (typeof fullName !== "string" || typeof email !== "string" || typeof password !== "string") {
+    throw new ApiError(400, "Full name, email and password must be strings");
   }
 
   if (!emailRegex.test(email)) {
@@ -32,13 +37,57 @@ export const validateRegisterInput = (data: RegisterUserInput): void => {
   }
 };
 
-export const validateLoginInput = (data: LoginUserInput): void => {
+export const validateLoginInput = (data: unknown): void => {
+  assertPlainObject(data);
   const { email, password } = data;
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
+  }
+
+  if (typeof email !== "string" || typeof password !== "string") {
+    throw new ApiError(400, "Email and password must be strings");
   }
 
   if (!emailRegex.test(email)) {
     throw new ApiError(400, "Invalid email format");
   }
 }
+
+export const validateRefreshTokenInput = (data: unknown): void => {
+  assertPlainObject(data);
+  const { refreshToken } = data;
+
+  if (refreshToken === undefined || refreshToken === null || refreshToken === "") {
+    throw new ApiError(400, "Refresh token required");
+  }
+
+  if (typeof refreshToken !== "string") {
+    throw new ApiError(400, "Refresh token must be a string");
+  }
+};
+
+export const validateUpdateNameInput = (data: unknown): void => {
+  assertPlainObject(data);
+  const { fullName } = data;
+
+  if (typeof fullName !== "string" || !fullName.trim()) {
+    throw new ApiError(400, "Full name is required");
+  }
+
+  if (fullName.trim().length < 2) {
+    throw new ApiError(400, "Full name must be at least 2 characters");
+  }
+};
+
+export const validateUpdateEmailInput = (data: unknown): void => {
+  assertPlainObject(data);
+  const { newEmail, currentPassword } = data;
+
+  if (typeof newEmail !== "string" || typeof currentPassword !== "string" || !newEmail || !currentPassword) {
+    throw new ApiError(400, "New email and current password are required");
+  }
+
+  if (!emailRegex.test(newEmail.trim())) {
+    throw new ApiError(400, "Invalid email format");
+  }
+};
