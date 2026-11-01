@@ -58,6 +58,28 @@ describe("validateUpdateProfileInput", () => {
         });
     });
 
+    it("accepts www and other subdomains for LinkedIn and GitHub URLs", () => {
+        assert.doesNotThrow(() =>
+            validateUpdateProfileInput({
+                linkedinUrl: "https://www.linkedin.com/in/iqbal-ahmed43/",
+                githubUrl: "https://www.github.com/jane",
+            })
+        );
+        assert.doesNotThrow(() => validateUpdateProfileInput({ linkedinUrl: "https://bd.linkedin.com/in/jane" }));
+        assert.doesNotThrow(() => validateUpdateProfileInput({ linkedinUrl: "https://LinkedIn.com/in/jane" }));
+    });
+
+    it("rejects lookalike, non-https and malformed LinkedIn and GitHub URLs", () => {
+        const linkedinError = { statusCode: 400, message: "Invalid LinkedIn URL" };
+        const githubError = { statusCode: 400, message: "Invalid GitHub URL" };
+        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "https://linkedin.com.evil.site/in/jane" }), linkedinError);
+        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "https://notlinkedin.com/in/jane" }), linkedinError);
+        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "http://www.linkedin.com/in/jane" }), linkedinError);
+        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "linkedin.com/in/jane" }), linkedinError);
+        assert.throws(() => validateUpdateProfileInput({ githubUrl: "https://github.com.evil.site/jane" }), githubError);
+        assert.throws(() => validateUpdateProfileInput({ githubUrl: "http://github.com/jane" }), githubError);
+    });
+
     it("rejects invalid and future dates of birth", () => {
         assert.throws(() => validateUpdateProfileInput({ dateOfBirth: "yesterday-ish" }), {
             statusCode: 400,

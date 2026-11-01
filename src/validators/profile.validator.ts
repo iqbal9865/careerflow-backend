@@ -4,6 +4,18 @@ import { assertPlainObject, assertStringField } from "./common.validator.js";
 
 const validGenders: string[] = Object.values(Gender);
 
+// True when value is an https URL on host or one of its subdomains (e.g. www.linkedin.com).
+// Parsing the URL rejects lookalikes such as https://linkedin.com.evil.site.
+// Keep in sync with isHttpsUrlOnHost in careerflow-frontend/lib/form.ts
+const isHttpsUrlOnHost = (value: string, host: string): boolean => {
+    try {
+        const { protocol, hostname } = new URL(value);
+        return protocol === "https:" && (hostname === host || hostname.endsWith(`.${host}`));
+    } catch {
+        return false;
+    }
+};
+
 const STRING_FIELDS = [
     "bio",
     "avatarUrl",
@@ -54,11 +66,11 @@ export const validateUpdateProfileInput = (data: unknown): void => {
         throw new ApiError(400, "Portfolio URL must start with https://");
     }
 
-    if (typeof linkedinUrl === "string" && !linkedinUrl.startsWith("https://linkedin.com")) {
+    if (typeof linkedinUrl === "string" && !isHttpsUrlOnHost(linkedinUrl, "linkedin.com")) {
         throw new ApiError(400, "Invalid LinkedIn URL");
     }
 
-    if (typeof githubUrl === "string" && !githubUrl.startsWith("https://github.com")) {
+    if (typeof githubUrl === "string" && !isHttpsUrlOnHost(githubUrl, "github.com")) {
         throw new ApiError(400, "Invalid GitHub URL");
     }
 
