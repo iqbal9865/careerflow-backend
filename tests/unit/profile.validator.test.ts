@@ -48,34 +48,27 @@ describe("validateUpdateProfileInput", () => {
     it("rejects non-https URLs", () => {
         assert.throws(() => validateUpdateProfileInput({ avatarUrl: "http://x.example/a.png" }), { statusCode: 400 });
         assert.throws(() => validateUpdateProfileInput({ portfolioUrl: "jane.dev" }), { statusCode: 400 });
-        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "https://evil.example" }), {
-            statusCode: 400,
-            message: "Invalid LinkedIn URL",
-        });
         assert.throws(() => validateUpdateProfileInput({ githubUrl: "https://gitlab.com/jane" }), {
             statusCode: 400,
             message: "Invalid GitHub URL",
         });
     });
 
-    it("accepts www and other subdomains for LinkedIn and GitHub URLs", () => {
-        assert.doesNotThrow(() =>
-            validateUpdateProfileInput({
-                linkedinUrl: "https://www.linkedin.com/in/iqbal-ahmed43/",
-                githubUrl: "https://www.github.com/jane",
-            })
-        );
-        assert.doesNotThrow(() => validateUpdateProfileInput({ linkedinUrl: "https://bd.linkedin.com/in/jane" }));
-        assert.doesNotThrow(() => validateUpdateProfileInput({ linkedinUrl: "https://LinkedIn.com/in/jane" }));
+    it("accepts any LinkedIn URL string without format checks", () => {
+        assert.doesNotThrow(() => validateUpdateProfileInput({ linkedinUrl: "https://www.linkedin.com/in/iqbal-ahmed43/" }));
+        assert.doesNotThrow(() => validateUpdateProfileInput({ linkedinUrl: "linkedin.com/in/jane" }));
     });
 
-    it("rejects lookalike, non-https and malformed LinkedIn and GitHub URLs", () => {
-        const linkedinError = { statusCode: 400, message: "Invalid LinkedIn URL" };
+    it("still requires LinkedIn URL to be a string or null", () => {
+        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: { set: "x" } }), { statusCode: 400 });
+    });
+
+    it("accepts www and other subdomains for GitHub URLs", () => {
+        assert.doesNotThrow(() => validateUpdateProfileInput({ githubUrl: "https://www.github.com/jane" }));
+    });
+
+    it("rejects lookalike, non-https and malformed GitHub URLs", () => {
         const githubError = { statusCode: 400, message: "Invalid GitHub URL" };
-        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "https://linkedin.com.evil.site/in/jane" }), linkedinError);
-        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "https://notlinkedin.com/in/jane" }), linkedinError);
-        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "http://www.linkedin.com/in/jane" }), linkedinError);
-        assert.throws(() => validateUpdateProfileInput({ linkedinUrl: "linkedin.com/in/jane" }), linkedinError);
         assert.throws(() => validateUpdateProfileInput({ githubUrl: "https://github.com.evil.site/jane" }), githubError);
         assert.throws(() => validateUpdateProfileInput({ githubUrl: "http://github.com/jane" }), githubError);
     });
