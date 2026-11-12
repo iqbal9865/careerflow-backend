@@ -9,7 +9,7 @@
     "test:integration": "node --import tsx --test \"tests/integration/**/*.test.ts\"",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate"
   },
