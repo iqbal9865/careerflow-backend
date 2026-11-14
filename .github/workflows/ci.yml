@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [master, devops]
+  pull_request:
+    branches: [master, devops]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Type-check, test and build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: careerflow
+          POSTGRES_PASSWORD: careerflow
+          POSTGRES_DB: careerflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U careerflow"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Throwaway values for the CI database only. These are not real secrets.
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://careerflow:careerflow@localhost:5432/careerflow_test
+      ACCESS_TOKEN_SECRET: ci-access-secret
+      REFRESH_TOKEN_SECRET: ci-refresh-secret
+      ACCESS_TOKEN_EXPIRES_IN: 15m
+      REFRESH_TOKEN_EXPIRES_IN: 30d
+      ADMIN_EMAIL: admin@careerflow.test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (runs prisma generate)
+        run: npm ci
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t careerflow-backend:ci .
