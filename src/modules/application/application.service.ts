@@ -20,13 +20,23 @@ export const APPLICATION_WRITABLE_FIELDS = [
     "rejectionReason"
 ] as const satisfies readonly (keyof ApplicationInput)[];
 
+// Dates arrive as strings; convert so Prisma also accepts date-only values like "2026-10-01"
+const toApplicationData = (data: Partial<ApplicationInput>) => {
+    const { appliedAt, followUpAt, ...rest } = pickFields(data, APPLICATION_WRITABLE_FIELDS);
+    return {
+        ...rest,
+        ...(appliedAt !== undefined && { appliedAt: new Date(appliedAt) }),
+        ...(followUpAt !== undefined && { followUpAt: followUpAt === null ? null : new Date(followUpAt) })
+    };
+};
+
 export const createApplicationService = async (
     userId: string,
     data: ApplicationInput
 ): Promise<ApplicationOutput> => {
     const application = await prisma.application.create({
         data: {
-            ...pickFields(data, APPLICATION_WRITABLE_FIELDS),
+            ...toApplicationData(data),
             // Required fields, guaranteed by validateCreateApplicationInput
             companyName: data.companyName,
             position: data.position,
@@ -81,7 +91,7 @@ export const updateApplicationService = async (
     const updated = await prisma.application.update({
         where: { id: applicationId },
         data: {
-            ...pickFields(data, APPLICATION_WRITABLE_FIELDS),
+            ...toApplicationData(data),
             // Leaving REJECTED clears the old reason
             ...(!isRejected && { rejectionReason: null })
         }

@@ -72,7 +72,7 @@ describe("PUT /profile", () => {
 
     it("rejects invalid values with 400 and { success: false }", async () => {
         const user = await registerUser();
-        for (const body of [{ bio: "short" }, { bio: { set: "x" } }, { linkedinUrl: "https://evil.example" }]) {
+        for (const body of [{ bio: "short" }, { bio: { set: "x" } }, { githubUrl: "https://evil.example" }]) {
             const res = await request("PUT", "/profile", { token: user.accessToken, body });
             assert.equal(res.status, 400);
             assert.equal(res.body.success, false);

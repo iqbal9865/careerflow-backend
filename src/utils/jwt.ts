@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import jwt, { type SignOptions } from "jsonwebtoken";
 
 function getSecret(name: string): string {
@@ -24,11 +25,13 @@ export const generateAccessToken = (userId: string) => {
   );
 };
 
-// Generate long-lived refresh token
+// Generate long-lived refresh token.
+// A random jwtid keeps tokens unique: iat has 1-second resolution, so two logins
+// in the same second would otherwise produce identical tokens and break the unique column.
 export const generateRefreshToken = (userId: string) => {
   return jwt.sign(
     { userId },
     refreshTokenSecret(),
-    { expiresIn: refreshTokenExpires } as SignOptions
+    { expiresIn: refreshTokenExpires, jwtid: randomUUID() } as SignOptions
   );
 };
